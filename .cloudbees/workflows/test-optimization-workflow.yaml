@@ -1,0 +1,40 @@
+apiVersion: automation.cloudbees.io/v1alpha1
+kind: workflow
+name: Test Optimization Workflow
+
+on:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  test-job:
+    steps:
+      - name: Checkout Code
+        uses: https://github.com/cloudbees-io/checkout@v1
+
+      - name: Install Dependencies
+        run: |
+          pip install pytest launchable
+
+      - name: Record Build
+        run: |
+          launchable record build --name $CLOUDBEES_BUILD_ID
+
+      - name: Record Tests
+        run: |
+          launchable record tests pytest tests/
+
+      - name: Get Optimized Test Subset
+        run: |
+          launchable subset \
+            --target 30% \
+            --output-file subset.txt pytest tests/
+
+      - name: Run Selected Tests
+        run: |
+          pytest $(cat subset.txt) --junitxml=report.xml
+
+      - name: Record Test Results
+        run: |
+          launchable record test-results pytest report.xml
