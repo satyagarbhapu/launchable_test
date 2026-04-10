@@ -1,0 +1,25 @@
+apiVersion: automation.cloudbees.io/v1alpha1
+kind: workflow
+name: Python Test Workflow
+
+on:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  test-job:
+    steps:
+      - name: Checkout Code
+        uses: https://github.com/cloudbees-io/checkout@v1
+
+      - name: Setup Python
+        uses: docker://python:3.10
+
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run Tests
+        run: |
+          python -m pytest -v
