@@ -5,7 +5,7 @@ name: Python Test Workflow
 on:
   push:
     branches:
-      - '**'
+      - main
 
 jobs:
   test-job:
@@ -13,12 +13,9 @@ jobs:
       - name: Checkout Code
         uses: https://github.com/cloudbees-io/checkout@v1
 
-      - name: Setup Python
-        uses: docker://python:3.10
-
       - name: Install Dependencies
         run: |
-          pip install -r requirements.txt
+          pip install pytest
 
       - name: Run Tests
         run: |
