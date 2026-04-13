@@ -10,17 +10,19 @@ on:
 jobs:
   test-job:
     steps:
-      # Checkout repo
       - name: Checkout Code
         uses: https://github.com/cloudbees-io/checkout@v1
 
-      # Run inside Selenium container (BEST OPTION)
-      - name: Run Selenium Tests
-        uses: docker://selenium/standalone-chrome
+      - name: Run Tests
+        uses: docker://python:3.10
         run: |
           apt-get update
-          apt-get install -y python3 python3-pip
+          apt-get install -y wget unzip curl
 
-          pip3 install pytest selenium webdriver-manager
+          # Install Chrome
+          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+          apt install -y ./google-chrome-stable_current_amd64.deb
+
+          pip install pytest selenium webdriver-manager
 
           pytest -v
