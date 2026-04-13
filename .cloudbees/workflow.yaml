@@ -1,0 +1,28 @@
+apiVersion: automation.cloudbees.io/v1alpha1
+kind: workflow
+name: Selenium Python Test Workflow
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test-job:
+    steps:
+      - name: Checkout Code
+        uses: https://github.com/cloudbees-io/checkout@v1
+
+      - name: Run Tests
+        uses: docker://python:3.10
+        run: |
+          apt-get update
+          apt-get install -y wget unzip curl
+
+          # Install Chrome
+          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+          apt install -y ./google-chrome-stable_current_amd64.deb
+
+          pip install pytest selenium webdriver-manager
+
+          pytest -v
