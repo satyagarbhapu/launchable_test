@@ -1,6 +1,6 @@
 apiVersion: automation.cloudbees.io/v1alpha1
 kind: workflow
-name: Selenium Python Test Workflow
+name: Selenium Python Test Workflow V2
 
 on:
   push:
