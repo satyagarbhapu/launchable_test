@@ -1,6 +1,6 @@
 apiVersion: automation.cloudbees.io/v1alpha1
 kind: workflow
-name: Python Test Workflow
+name: Selenium Python Test Workflow
 
 on:
   push:
@@ -10,13 +10,17 @@ on:
 jobs:
   test-job:
     steps:
-      # Step 1: Checkout
+      # Checkout repo
       - name: Checkout Code
         uses: https://github.com/cloudbees-io/checkout@v1
 
-      # Step 2: Run inside Python container
-      - name: Run Tests in Python
-        uses: docker://python:3.10
+      # Run inside Selenium container (BEST OPTION)
+      - name: Run Selenium Tests
+        uses: docker://selenium/standalone-chrome
         run: |
-          pip install pytest selenium webdriver-manager
-          python -m pytest -v
+          apt-get update
+          apt-get install -y python3 python3-pip
+
+          pip3 install pytest selenium webdriver-manager
+
+          pytest -v
