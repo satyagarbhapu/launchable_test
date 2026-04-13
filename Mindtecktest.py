@@ -8,9 +8,14 @@ from selenium.webdriver.chrome.service import Service
 # ---------- Setup & Teardown ----------
 @pytest.fixture
 def driver():
+    options = Options()
+    options.add_argument("--headless")   # REQUIRED for Cloud
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+
     service = Service(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service)
-    driver.maximize_window()
+    driver = webdriver.Chrome(service=service, options=options)
+
     yield driver
     driver.quit()
 
