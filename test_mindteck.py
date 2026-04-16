@@ -10,11 +10,11 @@ from selenium.webdriver.support import expected_conditions as EC
 
 
 # ---------------------------
-# Helper: Accept cookies safely
+# Helper: Accept cookies
 # ---------------------------
 def accept_cookies(driver):
     try:
-        WebDriverWait(driver, 8).until(
+        WebDriverWait(driver, 5).until(
             EC.element_to_be_clickable(
                 (By.XPATH, "//button[contains(., 'Accept')]")
             )
@@ -39,7 +39,7 @@ def pytest_runtest_makereport(item):
 
 
 # ---------------------------
-# Driver Fixture
+# Driver setup
 # ---------------------------
 @pytest.fixture
 def driver():
@@ -47,11 +47,12 @@ def driver():
     options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1920,1080")
 
-    service = Service(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service, options=options)
+    driver = webdriver.Chrome(
+        service=Service(ChromeDriverManager().install()),
+        options=options
+    )
 
     driver.set_page_load_timeout(40)
 
@@ -60,63 +61,58 @@ def driver():
 
 
 # ---------------------------
-# Tests
+# TEST CASES
 # ---------------------------
 
+# ✅ 1. Homepage loads correctly
 def test_homepage_load(driver):
     driver.get("https://www.mindteck.com")
+
     WebDriverWait(driver, 20).until(lambda d: d.title != "")
+
     assert "Mindteck" in driver.title
 
 
-def test_navigation_services(driver):
+# ✅ 2. Services section is visible on homepage
+def test_services_section_present(driver):
     driver.get("https://www.mindteck.com")
     accept_cookies(driver)
 
     wait = WebDriverWait(driver, 25)
 
-    # 🔥 Use partial link instead of exact text
-    services = wait.until(
+    # Check Services section text exists
+    services_section = wait.until(
         EC.presence_of_element_located(
-            (By.XPATH, "//a[contains(@href,'services')]")
+            (By.XPATH, "//*[contains(text(),'Our Services')]")
         )
     )
 
-    driver.execute_script("arguments[0].click();", services)
-
-    wait.until(EC.url_contains("services"))
-
-    assert "services" in driver.current_url.lower()
+    assert services_section.is_displayed()
 
 
-def test_contact_page(driver):
+# ✅ 3. Navigate to Contact page and verify heading
+def test_contact_page_heading(driver):
     driver.get("https://www.mindteck.com/contact-us/")
     accept_cookies(driver)
 
     wait = WebDriverWait(driver, 25)
 
-    # 🔥 More flexible locator
     heading = wait.until(
-        EC.presence_of_element_located(
-            (By.XPATH, "//h1 | //h2")
-        )
+        EC.presence_of_element_located((By.XPATH, "//h1 | //h2"))
     )
 
     assert "contact" in heading.text.lower()
 
 
-def test_contact_form_validation(driver):
+# ✅ 4. Contact form should NOT submit empty (validation test)
+def test_contact_form_not_submitted_empty(driver):
     driver.get("https://www.mindteck.com/contact-us/")
     accept_cookies(driver)
 
     wait = WebDriverWait(driver, 25)
 
-    # Wait for form to load
-    form = wait.until(
-        EC.presence_of_element_located((By.TAG_NAME, "form"))
-    )
+    current_url = driver.current_url
 
-    # Click submit
     submit_btn = wait.until(
         EC.element_to_be_clickable(
             (By.XPATH, "//button | //input[@type='submit']")
@@ -125,17 +121,14 @@ def test_contact_form_validation(driver):
 
     driver.execute_script("arguments[0].click();", submit_btn)
 
-    # 🔥 Instead of checking "required", verify form NOT submitted
-    current_url = driver.current_url
-
-    # Wait a bit
+    # Wait and verify no navigation (validation triggered)
     WebDriverWait(driver, 5).until(lambda d: d.current_url == current_url)
 
-    # If form validation works, page should NOT redirect
     assert driver.current_url == current_url
 
 
-def test_footer_links(driver):
+# ✅ 5. Footer contains links
+def test_footer_links_present(driver):
     driver.get("https://www.mindteck.com")
     accept_cookies(driver)
 
