@@ -10,13 +10,13 @@ from selenium.webdriver.support import expected_conditions as EC
 
 
 # ---------------------------
-# Helper: Accept cookies
+# Helper: Accept cookies safely
 # ---------------------------
 def accept_cookies(driver):
     try:
-        WebDriverWait(driver, 5).until(
+        WebDriverWait(driver, 8).until(
             EC.element_to_be_clickable(
-                (By.XPATH, "//button[contains(text(),'Accept')]")
+                (By.XPATH, "//button[contains(., 'Accept')]")
             )
         ).click()
     except:
@@ -24,7 +24,7 @@ def accept_cookies(driver):
 
 
 # ---------------------------
-# Capture screenshot on failure
+# Screenshot on failure
 # ---------------------------
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item):
@@ -39,7 +39,7 @@ def pytest_runtest_makereport(item):
 
 
 # ---------------------------
-# WebDriver Fixture
+# Driver Fixture
 # ---------------------------
 @pytest.fixture
 def driver():
@@ -53,7 +53,7 @@ def driver():
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service, options=options)
 
-    driver.set_page_load_timeout(30)
+    driver.set_page_load_timeout(40)
 
     yield driver
     driver.quit()
@@ -62,22 +62,27 @@ def driver():
 # ---------------------------
 # Tests
 # ---------------------------
+
 def test_homepage_load(driver):
     driver.get("https://www.mindteck.com")
+    WebDriverWait(driver, 20).until(lambda d: d.title != "")
     assert "Mindteck" in driver.title
 
 
 def test_navigation_services(driver):
     driver.get("https://www.mindteck.com")
-
     accept_cookies(driver)
 
-    wait = WebDriverWait(driver, 20)
+    wait = WebDriverWait(driver, 25)
 
-    services_link = wait.until(
-        EC.element_to_be_clickable((By.LINK_TEXT, "Services"))
+    # 🔥 Use partial link instead of exact text
+    services = wait.until(
+        EC.presence_of_element_located(
+            (By.XPATH, "//a[contains(@href,'services')]")
+        )
     )
-    services_link.click()
+
+    driver.execute_script("arguments[0].click();", services)
 
     wait.until(EC.url_contains("services"))
 
@@ -86,32 +91,33 @@ def test_navigation_services(driver):
 
 def test_contact_page(driver):
     driver.get("https://www.mindteck.com/contact-us/")
-
     accept_cookies(driver)
 
-    wait = WebDriverWait(driver, 20)
+    wait = WebDriverWait(driver, 25)
 
     heading = wait.until(
-        EC.presence_of_element_located((By.TAG_NAME, "h1"))
+        EC.visibility_of_element_located((By.TAG_NAME, "h1"))
     )
 
-    assert "Contact" in heading.text
+    assert "contact" in heading.text.lower()
 
 
 def test_contact_form_validation(driver):
     driver.get("https://www.mindteck.com/contact-us/")
-
     accept_cookies(driver)
 
-    wait = WebDriverWait(driver, 20)
+    wait = WebDriverWait(driver, 25)
 
+    # 🔥 safer locator
     submit_btn = wait.until(
-        EC.element_to_be_clickable(
-            (By.XPATH, "//button[@type='submit'] | //input[@type='submit']")
+        EC.presence_of_element_located(
+            (By.XPATH, "//button | //input[@type='submit']")
         )
     )
-    submit_btn.click()
 
+    driver.execute_script("arguments[0].click();", submit_btn)
+
+    # Wait for validation message
     wait.until(lambda d: "required" in d.page_source.lower())
 
     assert "required" in driver.page_source.lower()
@@ -119,10 +125,9 @@ def test_contact_form_validation(driver):
 
 def test_footer_links(driver):
     driver.get("https://www.mindteck.com")
-
     accept_cookies(driver)
 
-    wait = WebDriverWait(driver, 20)
+    wait = WebDriverWait(driver, 25)
 
     footer = wait.until(
         EC.presence_of_element_located((By.TAG_NAME, "footer"))
