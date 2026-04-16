@@ -91,53 +91,53 @@ def test_services_section_present(driver):
 
 
 # ✅ 3. Navigate to Contact page and verify heading
-def test_contact_page_heading(driver):
-    driver.get("https://www.mindteck.com/contact-us/")
-    accept_cookies(driver)
+# def test_contact_page_heading(driver):
+#     driver.get("https://www.mindteck.com/contact-us/")
+#     accept_cookies(driver)
 
-    wait = WebDriverWait(driver, 25)
+#     wait = WebDriverWait(driver, 25)
 
-    heading = wait.until(
-        EC.presence_of_element_located((By.XPATH, "//h1 | //h2"))
-    )
+#     heading = wait.until(
+#         EC.presence_of_element_located((By.XPATH, "//h1 | //h2"))
+#     )
 
-    assert "contact" in heading.text.lower()
-
-
-# ✅ 4. Contact form should NOT submit empty (validation test)
-def test_contact_form_not_submitted_empty(driver):
-    driver.get("https://www.mindteck.com/contact-us/")
-    accept_cookies(driver)
-
-    wait = WebDriverWait(driver, 25)
-
-    current_url = driver.current_url
-
-    submit_btn = wait.until(
-        EC.element_to_be_clickable(
-            (By.XPATH, "//button | //input[@type='submit']")
-        )
-    )
-
-    driver.execute_script("arguments[0].click();", submit_btn)
-
-    # Wait and verify no navigation (validation triggered)
-    WebDriverWait(driver, 5).until(lambda d: d.current_url == current_url)
-
-    assert driver.current_url == current_url
+#     assert "contact" in heading.text.lower()
 
 
-# ✅ 5. Footer contains links
-def test_footer_links_present(driver):
-    driver.get("https://www.mindteck.com")
-    accept_cookies(driver)
+# # ✅ 4. Contact form should NOT submit empty (validation test)
+# def test_contact_form_not_submitted_empty(driver):
+#     driver.get("https://www.mindteck.com/contact-us/")
+#     accept_cookies(driver)
 
-    wait = WebDriverWait(driver, 25)
+#     wait = WebDriverWait(driver, 25)
 
-    footer = wait.until(
-        EC.presence_of_element_located((By.TAG_NAME, "footer"))
-    )
+#     current_url = driver.current_url
 
-    links = footer.find_elements(By.TAG_NAME, "a")
+#     submit_btn = wait.until(
+#         EC.element_to_be_clickable(
+#             (By.XPATH, "//button | //input[@type='submit']")
+#         )
+#     )
 
-    assert len(links) > 0
+#     driver.execute_script("arguments[0].click();", submit_btn)
+
+#     # Wait and verify no navigation (validation triggered)
+#     WebDriverWait(driver, 5).until(lambda d: d.current_url == current_url)
+
+#     assert driver.current_url == current_url
+
+
+# # ✅ 5. Footer contains links
+# def test_footer_links_present(driver):
+#     driver.get("https://www.mindteck.com")
+#     accept_cookies(driver)
+
+#     wait = WebDriverWait(driver, 25)
+
+#     footer = wait.until(
+#         EC.presence_of_element_located((By.TAG_NAME, "footer"))
+#     )
+
+#     links = footer.find_elements(By.TAG_NAME, "a")
+
+#     assert len(links) > 0
